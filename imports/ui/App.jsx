@@ -56,6 +56,8 @@ if (this.state.selectedGameId === null) {
 }
 
 export default createContainer(() => {
+  Meteor.subscribe('games');
+
   return {
     user: Meteor.user(),
     games: Games.find().fetch()

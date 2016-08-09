@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import {GamesController} from '../api/controllers/gamesController.js';
 import {Game, GameStatuses} from '../api/models/game.js';
+import {userMarkGame} from '../api/methods/games.js';
 
 export default class GameBoard extends Component {
   handleCellClick(row, col) {
     let game = this.props.game;
     if (game.currentPlayerIndex() !== game.userIndex(this.props.user)) return;
-    GamesController.userMarkGame(game._id, this.props.user, row, col);
+    userMarkGame.call({gameId: game._id, row: row, col: col});
   }
 
 handleBackToGameList() {
