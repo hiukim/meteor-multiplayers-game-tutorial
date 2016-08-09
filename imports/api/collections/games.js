@@ -1,39 +1,26 @@
 import { Mongo } from 'meteor/mongo';
+import { Game } from '../models/game.js';
 
-export default Games = new Mongo.Collection('games');
+export default Games = new Mongo.Collection('games', {
+  transform(doc) {
+    return new Game(doc);
+  }
+});
 
 _.extend(Games, {
-  newGame() {
-    let gameDoc = {
-      board: [[null, null, null], [null, null, null], [null, null, null]],
-      players: []
-    };
-    let gameId = Games.insert(gameDoc); // insert a new game document into the collection
-    return gameId;
-  },
+  saveGame(game) {
 
-  joinGame(gameId, user) {
-    console.log("gameId; ", gameId, user);
-    let game = Games.findOne(gameId);
-    if (game.players.length === 2) {
-      throw "game is full";
+    let gameDoc = {};
+    _.each(game.persistentFields(), (field) => {
+      gameDoc[field] = game[field];
+    });
+
+    if (game._id) {
+      Games.update(game._id, {
+        $set: gameDoc
+      });
+    } else {
+      Games.insert(gameDoc);
     }
-    game.players.push({
-      userId: user._id,
-      username: user.username
-    });
-    Games.update(game._id, {
-      $set: {players: game.players}
-    });
-  },
-
-  leaveGame(gameId, user) {
-    let game = Games.findOne(gameId);
-    game.players = _.reject(game.players, (player) => {
-      return player.userId === user._id;
-    });
-    Games.update(game._id, {
-      $set: {players: game.players}
-    });
   }
 });
