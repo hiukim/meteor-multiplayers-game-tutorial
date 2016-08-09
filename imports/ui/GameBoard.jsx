@@ -22,6 +22,10 @@ export default class GameBoard extends Component {
     });
   }
 
+  handleBackToGameList() {
+    this.props.backToGameListHandler();
+  }
+
   renderCell(row, col) {
     let value = this.props.game.board[row][col];
     if (value === 0) return (<td>O</td>);
@@ -32,25 +36,28 @@ export default class GameBoard extends Component {
   }
   render() {
     return (
-      <table className="game-board">
-        <tbody>
-          <tr>
-            {this.renderCell(0, 0)}
-            {this.renderCell(0, 1)}
-            {this.renderCell(0, 2)}
-          </tr>
-          <tr>
-            {this.renderCell(1, 0)}
-            {this.renderCell(1, 1)}
-            {this.renderCell(1, 2)}
-          </tr>
-          <tr>
-            {this.renderCell(2, 0)}
-            {this.renderCell(2, 1)}
-            {this.renderCell(2, 2)}
-          </tr>
-        </tbody>
-      </table>
+      <div>
+        <button onClick={this.handleBackToGameList.bind(this)}>Back</button>
+        <table className="game-board">
+          <tbody>
+            <tr>
+              {this.renderCell(0, 0)}
+              {this.renderCell(0, 1)}
+              {this.renderCell(0, 2)}
+            </tr>
+            <tr>
+              {this.renderCell(1, 0)}
+              {this.renderCell(1, 1)}
+              {this.renderCell(1, 2)}
+            </tr>
+            <tr>
+              {this.renderCell(2, 0)}
+              {this.renderCell(2, 1)}
+              {this.renderCell(2, 2)}
+            </tr>
+          </tbody>
+        </table>
+      </div>
     )
   }
 }
