@@ -13,22 +13,22 @@ class App extends Component {
     }
   }
 
-handleEnterGame(gameId) {
+  handleEnterGame(gameId) {
     this.setState({selectedGameId: gameId});
   }
 
-handleBackToGameList() {
+  handleBackToGameList() {
     this.setState({selectedGameId: null});
   }
 
-selectedGame() {
+  selectedGame() {
     let selectedGame = _.find(this.props.games, (game) => {
       return game._id === this.state.selectedGameId;
     });
     return selectedGame;
   }
 
-render() {
+  render() {
     if (!this.props.user) {
       return (
         <div>
@@ -37,7 +37,7 @@ render() {
       )
     }
 
-if (this.state.selectedGameId === null) {
+    if (this.state.selectedGameId === null) {
       return (
         <GameList
           games={this.props.games}

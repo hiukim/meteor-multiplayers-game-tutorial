@@ -21,3 +21,5 @@ react-meteor-data
 accounts-password
 aldeed:simple-schema
 mdg:validated-method
+semantic:ui-css
+fourseven:scss
