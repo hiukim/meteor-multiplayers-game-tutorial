@@ -3,6 +3,7 @@ import { createContainer } from 'meteor/react-meteor-data';
 import Games from '../api/collections/games.js';
 import GameList from './GameList.jsx';
 import GameBoard from './GameBoard.jsx';
+import LoginForm from './LoginForm.jsx';
 
 class App extends Component {
   constructor(props) {
@@ -12,33 +13,43 @@ class App extends Component {
     }
   }
 
-  handleEnterGame(gameId) {
+handleEnterGame(gameId) {
     this.setState({selectedGameId: gameId});
   }
 
-  handleBackToGameList() {
+handleBackToGameList() {
     this.setState({selectedGameId: null});
   }
 
-  selectedGame() {
+selectedGame() {
     let selectedGame = _.find(this.props.games, (game) => {
       return game._id === this.state.selectedGameId;
     });
     return selectedGame;
   }
 
-  render() {
-    if (this.state.selectedGameId === null) {
+render() {
+    if (!this.props.user) {
+      return (
+        <div>
+          <LoginForm/>
+        </div>
+      )
+    }
+
+if (this.state.selectedGameId === null) {
       return (
         <GameList
           games={this.props.games}
-          enterGameHandler={this.handleEnterGame.bind(this)}/>
+          enterGameHandler={this.handleEnterGame.bind(this)}
+          user={this.props.user}/>
       )
     } else {
       return (
         <GameBoard
           game={this.selectedGame()}
-          backToGameListHandler={this.handleBackToGameList.bind(this)}/>
+          backToGameListHandler={this.handleBackToGameList.bind(this)}
+          user={this.props.user}/>
       )
     }
   }
@@ -46,6 +57,7 @@ class App extends Component {
 
 export default createContainer(() => {
   return {
+    user: Meteor.user(),
     games: Games.find().fetch()
   };
 }, App);
