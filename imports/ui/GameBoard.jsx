@@ -1,33 +1,42 @@
 import React, { Component } from 'react';
 import GameHeader from './GameHeader.jsx';
 import {Game, GameStatuses} from '../api/models/game.js';
-import {userMarkGame} from '../api/methods/games.js';
+import {userPickGame} from '../api/methods/games.js';
 
 export default class GameBoard extends Component {
-  handleCellClick(row, col) {
-    let game = this.props.game;
-    if (game.currentPlayerIndex() !== game.userIndex(this.props.user)) return;
-    userMarkGame.call({gameId: game._id, row: row, col: col});
+  constructor(props) {
+    super(props);
+    let pickCounts = [];
+    for (let i = 0; i < props.game.board.length; i++) {
+      pickCounts.push(0);
+    }
+    this.state = {
+      pickCounts: pickCounts,
+    }
   }
 
   handleBackToGameList() {
     this.props.backToGameListHandler();
   }
 
-  renderCell(row, col) {
-    let value = this.props.game.board[row][col];
-    if (value === 0) return (<td>O</td>);
-    if (value === 1) return (<td>X</td>);
-    if (value === null) return (
-      <td onClick={this.handleCellClick.bind(this, row, col)}></td>
-    );
+  handlePickCountsChange(pileIndex, e) {
+    let newPickCounts = [];
+    for (let i = 0; i < this.state.pickCounts.length; i++) {
+      newPickCounts.push(this.state.pickCounts[i]);
+    }
+    newPickCounts[pileIndex] = e.target.value;
+    this.setState({pickCounts: newPickCounts});
+  }
+
+  handlePick(pileIndex) {
+    userPickGame.call({gameId: this.props.game._id, pileIndex: pileIndex, count: parseInt(this.state.pickCounts[pileIndex])});
   }
 
   renderStatus() {
     let game = this.props.game;
     let status = "";
     if (game.status === GameStatuses.STARTED) {
-      let playerIndex = game.currentPlayerIndex();
+      let playerIndex = game.currentPlayerIndex;
       status = `Current player: ${game.players[playerIndex].username}`;
     } else if (game.status === GameStatuses.FINISHED) {
       let playerIndex = game.winner();
@@ -54,13 +63,13 @@ export default class GameBoard extends Component {
           <div className="ui grid">
             <div className="ui three column center aligned row">
               <div className="ui column">
-                {this.props.game.players[0].username} <br/>O
+                {this.props.game.players[0].username}
               </div>
               <div className="ui column">
                 v.s.
               </div>
               <div className="ui column">
-                {this.props.game.players[1].username} <br/>X
+                {this.props.game.players[1].username}
               </div>
             </div>
           </div>
@@ -70,25 +79,26 @@ export default class GameBoard extends Component {
         </div>
 
         <div className="ui attached segment">
-          <table className="game-board">
-            <tbody>
-              <tr>
-                {this.renderCell(0, 0)}
-                {this.renderCell(0, 1)}
-                {this.renderCell(0, 2)}
-              </tr>
-              <tr>
-                {this.renderCell(1, 0)}
-                {this.renderCell(1, 1)}
-                {this.renderCell(1, 2)}
-              </tr>
-              <tr>
-                {this.renderCell(2, 0)}
-                {this.renderCell(2, 1)}
-                {this.renderCell(2, 2)}
-              </tr>
-            </tbody>
-          </table>
+          <div className="game-board">
+            {this.props.game.board.map((pileCount, pileIndex) => {
+              return (
+                <div key={pileIndex}>
+                  {_.range(pileCount).map((index) => {
+                    return (
+                      <span key={index} className="object">&nbsp;</span>
+                      )
+                  })}
+
+                  {/* only in player turn and remains > 0 */}
+                  {pileCount > 0 && this.props.game.currentPlayerIndex === this.props.game.userIndex(this.props.user)? (
+                    <span>
+                      <input size="2" type="text" onChange={this.handlePickCountsChange.bind(this, pileIndex)} value={this.state.pickCounts[pileIndex]}/> <button className="ui button" onClick={this.handlePick.bind(this, pileIndex)}>Pick</button>
+                    </span>
+                  ): null}
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     )

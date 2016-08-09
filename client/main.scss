@@ -1,11 +1,9 @@
-table.game-board {
-  margin: auto;
-
-  tr td {
-    border: 1px solid black;
-    width: 80px;
-    height: 80px;
-    font-size: 80px;
-    text-align: center;
+div.game-board {
+  span.object {
+    background: brown;
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+    display: inline-block;
   }
 }

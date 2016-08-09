@@ -27,8 +27,15 @@ export class Game {
       _.extend(this, gameDoc);
     } else {
       this.status = GameStatuses.WAITING;
-      this.board = [[null, null, null], [null, null, null], [null, null, null]];
+
+      // random number of piles, and random number objects in each piles
+      let numPiles = _.random(3, 5);
+      this.board = [];
+      for (let i = 0; i < numPiles; i++) {
+        this.board.push(_.random(3, 7));
+      }
       this.players = [];
+      this.currentPlayerIndex = _.random(0, 1); //random starting player
     }
   }
 
@@ -38,7 +45,7 @@ export class Game {
    * @return {[]String] List of fields required persistent storage
    */
   persistentFields() {
-    return ['status', 'board', 'players'];
+    return ['status', 'board', 'players', 'currentPlayerIndex'];
   }
 
 /**
@@ -87,49 +94,32 @@ this.players.push({
     }
   }
 
-/**
-   * Handle user action. i.e. putting marker on the game board
-   *
+  /**
+   * User pick
    * @param {User} user
-   * @param {Number} row Row index of the board
-   * @param {Number} col Col index of the board
+   * @param {Number} pileIndex Index (0 based) of the pile user is picking
+   * @param {Number} count Number of objects picked
    */
-  userMark(user, row, col) {
+  userPick(user, pileIndex, count) {
     let playerIndex = this.userIndex(user);
-    let currentPlayerIndex = this.currentPlayerIndex();
-    if (currentPlayerIndex !== playerIndex) {
+    if (this.currentPlayerIndex !== playerIndex) {
       throw "user cannot make move at current state";
     }
-    if (row < 0 || row >= this.board.length || col < 0 || col >= this.board[row].length) {
-      throw "invalid row|col input";
+    if (pileIndex < 0 || pileIndex >= this.board.length) {
+      throw "invalid pile";
     }
-    if (this.board[row][col] !== null) {
-      throw "spot is filled";
+    if (count <= 0 || this.board[pileIndex] < count) {
+      throw "invalid count";
     }
-    this.board[row][col] = playerIndex;
-
+    this.board[pileIndex] -= count;
     let winner = this.winner();
     if (winner !== null) {
       this.status = GameStatuses.FINISHED;
-    }
-    if (this._filledCount() === 9) {
-      this.status = GameStatuses.FINISHED;
+    } else {
+      this.currentPlayerIndex = 1 - this.currentPlayerIndex;
     }
   }
 
- /**
-   * @return {Number} currentPlayerIndex 0 or 1
-   */
-  currentPlayerIndex() {
-    if (this.status !== GameStatuses.STARTED) {
-      return null;
-    }
-
-// determine the current player by counting the filled cells
-    // if even, then it's first player, otherwise it's second player
-    let filledCount = this._filledCount();
-    return (filledCount % 2 === 0? 0: 1);
-  }
 
 /**
    * Determine the winner of the game
@@ -138,33 +128,10 @@ this.players.push({
    */
   winner() {
     let board = this.board;
-    for (let playerIndex = 0; playerIndex < 2; playerIndex++) {
-      // check rows
-      for (let r = 0; r < 3; r++) {
-        let allMarked = true;
-        for (let c = 0; c < 3; c++) {
-          if (board[r][c] !== playerIndex) allMarked = false;
-        }
-        if (allMarked) return playerIndex;
-      }
-
-// check cols
-      for (let c = 0; c < 3; c++) {
-        let allMarked = true;
-        for (let r = 0; r < 3; r++) {
-          if (board[r][c] !== playerIndex) allMarked = false;
-        }
-        if (allMarked) return playerIndex;
-      }
-
-// check diagonals
-      if (board[0][0] === playerIndex && board[1][1] === playerIndex && board[2][2] === playerIndex) {
-        return playerIndex;
-      }
-      if (board[0][2] === playerIndex && board[1][1] === playerIndex && board[2][0] === playerIndex) {
-        return playerIndex;
-      }
-    }
+    let remain = _.reduce(this.board, (memo, count) => {
+      return memo + count;
+    }, 0);
+    if (remain === 0) return this.currentPlayerIndex;
     return null;
   }
 
@@ -181,15 +148,5 @@ this.players.push({
       }
     }
     return null;
-  }
-
-  _filledCount() {
-    let filledCount = 0;
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
-        if (this.board[r][c] !== null) filledCount++;
-      }
-    }
-    return filledCount;
   }
 }

@@ -28,14 +28,14 @@ export const userLeaveGame = new ValidatedMethod({
   }
 });
 
-export const userMarkGame = new ValidatedMethod({
+export const userPickGame = new ValidatedMethod({
   name: 'games.userMarkGame',
   validate: new SimpleSchema({
     gameId: {type: String},
-    row: {type: Number},
-    col: {type: Number}
+    pileIndex: {type: Number},
+    count: {type: Number}
   }).validator(),
-  run({gameId, row, col}) {
-    GamesController.userMarkGame(gameId, Meteor.user(), row, col);
+  run({gameId, pileIndex, count}) {
+    GamesController.userPickGame(gameId, Meteor.user(), pileIndex, count);
   }
 });

@@ -20,9 +20,9 @@ export let GamesController = {
     Games.saveGame(game);
   },
 
-  userMarkGame(gameId, user, row, col) {
+  userPickGame(gameId, user, pileIndex, count) {
     let game = Games.findOne(gameId);
-    game.userMark(user, row, col);
+    game.userPick(user, pileIndex, count);
     Games.saveGame(game);
   }
 }
